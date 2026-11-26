@@ -28,11 +28,19 @@ Oracle 10g (yajra/laravel-oci8), Tailwind + Alpine, Spatie Permission.
 5. **Snapshot = tak pernah diubah.** Versi berstatus Selesai di `sikeutxn_snap_*` tidak di-update/di-hapus;
    ambil ulang = versi baru. Pembanding (`App\Support\SnapshotJurnal::bandingkan`) bergantung pada itu (hasilnya di-cache).
    `kunci_baris` = sha1(cabang|label|akun|lawan|tanggal|shift) — nominal sengaja tidak masuk kunci.
-6. Halaman baru: daftarkan route di `routes/web.php` **dan** entri di `App\Services\AppMenu::definitions()`
-   dengan `'izin'` = permission (pembatas akses halaman + aksi Livewire, middleware `menu` persistent).
-   **Jangan menulis nama role di kode** — hak akses = permission Spatie: tambah di `App\Support\HakAkses::DAFTAR`,
-   buat lewat migrasi, pakai `@can` / `->can()` + guard server di method-nya; pembagian ke role diatur user di Role Control.
-   Pengecualian tunggal: `HakAkses::PERAN_SUPER` ('Admin') selalu boleh semua.
+6. **Hak akses = pola SIRUS: satu berkas per program** di `app/Akses/Program/<Kelompok>/` (+ `_kelompok.php` berisi
+   judul & urutan program; folder kelompok terdaftar di `App\Support\ProgramAkses::BERKAS`). Tiap program memuat
+   `'menu'` (entri sidebar + hak Lihat halaman `{route}.lihat`) dan `'aksiKhusus'` (aksi di dalam halaman, mis.
+   `akun.kelola`). Halaman baru: route di grup `menu` `routes/web.php` **dan** entri di berkas programnya — route grup
+   `menu` tanpa definisi DITOLAK (deny-by-default). Keputusan boleh/tidak: `App\Support\AksesHalaman` (dipakai menu,
+   middleware `menu` persistent Livewire, Gate aksi khusus, `x-tautan-halaman`). Aksi: `@can` / `Gate::authorize()` di
+   method-nya. Tautan ke halaman lain dari laporan: `<x-tautan-halaman>` (link hanya bila boleh dibuka).
+   **Nama role di definisi hanya centang awal** (`'roles'` memakai konstanta `HakAkses::AWAL_*`, huruf kecil):
+   permission + centang awal dibuat `php artisan akses:sinkron`, yang jalan OTOMATIS pada request pertama sesudah
+   berkas definisi berubah (`App\Support\SinkronAksesOtomatis`) — tidak perlu migrasi. Sinkron juga MENGHAPUS
+   permission di luar definisi; centang yang diatur user di Role Control tidak disentuh (kecuali `--ulang=`).
+   `HakAkses::SEMUA_ROLE` ('*') = halaman terbuka untuk semua user login (Panduan). Pengecualian tunggal:
+   `HakAkses::PERAN_SUPER` ('Admin') selalu boleh semua.
 7. **Hal yang beda antar-instansi = pengaturan, bukan konstanta** (tabel `sikeumst_pengaturans`, DDL 04, kelas
    `App\Support\Pengaturan`). Format kode akun dibaca lewat `App\Support\FormatKodeAkun` — jangan menulis
    jumlah tingkat/digit/pemisah/nomor kontra di kode.

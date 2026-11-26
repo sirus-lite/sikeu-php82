@@ -204,13 +204,13 @@ new class extends Component {
                 @if (!$this->saldoAwalSah)
                     <div role="status" class="px-4 py-2 text-sm rounded-lg bg-warning-soft text-fg-warning">
                         Saldo awal {{ substr($periode, 0, 4) }} belum disahkan — Neraca hanya berisi mutasi, bukan posisi keuangan sebenarnya.
-                        <a href="{{ route('buku-besar.saldo-awal', ['tahun' => substr($periode, 0, 4)]) }}" wire:navigate class="font-medium underline">Saldo Awal</a>
+                        <x-tautan-halaman route="buku-besar.saldo-awal" :params="['tahun' => substr($periode, 0, 4)]" class="font-medium underline">Saldo Awal</x-tautan-halaman>
                     </div>
                 @endif
                 @if ($this->periodeBelumPosting !== [])
                     <div role="status" class="px-4 py-2 text-sm rounded-lg bg-warning-soft text-fg-warning">
                         Belum diposting: {{ implode(', ', $this->periodeBelumPosting) }} — saldo akhir {{ SnapshotJurnal::labelPeriode($periode) }} belum lengkap.
-                        <a href="{{ route('buku-besar.periode', ['tahun' => substr($periode, 0, 4)]) }}" wire:navigate class="font-medium underline">Tarik Data SIRUS</a>
+                        <x-tautan-halaman route="buku-besar.periode" :params="['tahun' => substr($periode, 0, 4)]" class="font-medium underline">Tarik Data SIRUS</x-tautan-halaman>
                     </div>
                 @endif
                 @if (($pemeriksaan['yatim'] ?? []) !== [])
@@ -234,13 +234,13 @@ new class extends Component {
                             </p>
                             @if ($bukuTidakSeimbang)
                                 <p><b>Penyebab: buku besar sendiri tidak seimbang</b> (total debit ≠ kredit) — ada jurnal bermasalah. Periksa
-                                    <a href="{{ route('buku-besar.neraca-saldo', ['periode' => $periode]) }}" wire:navigate class="font-semibold underline">Neraca Saldo</a> dan jurnal yang baru diposting di
-                                    <a href="{{ route('buku-besar.jurnal-umum', ['periode' => $periode]) }}" wire:navigate class="font-semibold underline">Jurnal Umum</a>.</p>
+                                    <x-tautan-halaman route="buku-besar.neraca-saldo" :params="['periode' => $periode]" class="font-semibold underline">Neraca Saldo</x-tautan-halaman> dan jurnal yang baru diposting di
+                                    <x-tautan-halaman route="buku-besar.jurnal-umum" :params="['periode' => $periode]" class="font-semibold underline">Jurnal Umum</x-tautan-halaman>.</p>
                             @else
                                 <p><b>Penyebab: susunan template</b> — buku besar seimbang, tetapi ada akun yang tidak masuk baris mana pun (yatim) / masuk dua baris (dobel), atau rumus total keliru.
                                     @if (($pemeriksaan['yatim'] ?? []) !== []) Akun yatim: {{ collect($pemeriksaan['yatim'])->pluck('akun_id')->implode(', ') }}. @endif
                                     @if (($pemeriksaan['dobel'] ?? []) !== []) Akun dobel: {{ implode(', ', $pemeriksaan['dobel']) }}. @endif
-                                    Betulkan di <a href="{{ route('master.susunan-laporan', ['template' => $this->laporan['template']->lap_id ?? '']) }}" wire:navigate class="font-semibold underline">Susunan Laporan</a>.</p>
+                                    Betulkan di <x-tautan-halaman route="master.susunan-laporan" :params="['template' => $this->laporan['template']->lap_id ?? '']" class="font-semibold underline">Susunan Laporan</x-tautan-halaman>.</p>
                             @endif
                         </div>
                     </div>

@@ -276,8 +276,8 @@ new class extends Component {
             <div class="px-6 py-4 border-t bg-surface-soft border-hairline dark:bg-gray-900 dark:border-gray-700">
                 <div class="flex items-center justify-between gap-2">
                     @if ($akun)
-                        <a href="{{ route('buku-besar.buku-besar', ['akun' => $akunId, 'dari' => $periodeDari, 'sampai' => $periodeSampai]) }}" wire:navigate
-                            class="text-sm font-medium text-brand-green hover:underline dark:text-brand-lime">Buka halaman Buku Besar →</a>
+                        <x-tautan-halaman route="buku-besar.buku-besar" :params="['akun' => $akunId, 'dari' => $periodeDari, 'sampai' => $periodeSampai]"
+                            class="text-sm font-medium text-brand-green hover:underline dark:text-brand-lime">Buka halaman Buku Besar →</x-tautan-halaman>
                     @else
                         <span></span>
                     @endif

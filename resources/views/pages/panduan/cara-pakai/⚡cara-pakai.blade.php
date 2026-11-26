@@ -2,7 +2,9 @@
 
 use Livewire\Component;
 use Spatie\Permission\Models\Role;
+use App\Support\AksesHalaman;
 use App\Support\HakAkses;
+use App\Support\ProgramAkses;
 
 /**
  * PANDUAN — CARA PAKAI SIKEU (statis, tanpa mutasi). Isinya sama dengan skill keuangan-rs §5 (alur tutup bulan, aturan
@@ -10,7 +12,11 @@ use App\Support\HakAkses;
  * permission (Spatie) supaya tidak basi bila hak akses diubah di Sistem › Peran & Hak Akses. Terbuka untuk semua user login.
  */
 new class extends Component {
-    /** @return array<string, array{label: string, peran: array<int, string>}> */
+    /**
+     * Hak per program (berkas app/Akses/Program), urut seperti Role Control: lihat halaman lalu aksi khusus.
+     *
+     * @return array<string, array<string, array{label: string, peran: array<int, string>}>> judul "Kelompok › Program" => hak
+     */
     public function hakAkses(): array
     {
         $perIzin = [];
@@ -19,13 +25,33 @@ new class extends Component {
                 $perIzin[$izin->name][] = $peran->name;
             }
         }
-        $hasil = [];
-        foreach (HakAkses::DAFTAR as $izin => $label) {
+        $peranDari = function (string $izin) use ($perIzin): array {
             $peranList = $perIzin[$izin] ?? [];
             if (!in_array(HakAkses::PERAN_SUPER, $peranList, true)) {
                 array_unshift($peranList, HakAkses::PERAN_SUPER);
             }
-            $hasil[$izin] = ['label' => $label, 'peran' => array_values(array_unique($peranList))];
+
+            return array_values(array_unique($peranList));
+        };
+
+        $hasil = [];
+        foreach (ProgramAkses::kelompok() as $kelompok) {
+            foreach ($kelompok['program'] as $namaProgram => $definisi) {
+                $hak = [];
+                foreach ($definisi['menu'] ?? [] as $m) {
+                    if (in_array(HakAkses::SEMUA_ROLE, $m['roles'], true)) {
+                        continue;
+                    }
+                    $izin = AksesHalaman::namaPermission($m['route'], 'lihat');
+                    $hak[$izin] = ['label' => 'Lihat halaman ' . $m['title'], 'peran' => $peranDari($izin)];
+                }
+                foreach ($definisi['aksiKhusus'] ?? [] as $izin => $aksi) {
+                    $hak[$izin] = ['label' => $aksi['label'], 'peran' => $peranDari($izin)];
+                }
+                if ($hak) {
+                    $hasil[$kelompok['judul'] . ' › ' . $namaProgram] = $hak;
+                }
+            }
         }
 
         return $hasil;
@@ -263,16 +289,21 @@ new class extends Component {
                 {{-- HAK AKSES --}}
                 <section id="hak" class="p-6 border scroll-mt-24 bg-canvas border-hairline rounded-2xl dark:bg-gray-900 dark:border-gray-700">
                     <h2>6. Siapa boleh apa</h2>
-                    <p class="mt-2 text-sm">Dibaca langsung dari pengaturan {!! $tautan('sistem.role-control', 'Sistem › Peran & Hak Akses') !!} saat ini. Peran {{ \App\Support\HakAkses::PERAN_SUPER }} selalu boleh semua.</p>
+                    <p class="mt-2 text-sm">Dibaca langsung dari pengaturan {!! $tautan('sistem.role-control', 'Sistem › Peran & Hak Akses') !!} saat ini. Peran {{ \App\Support\HakAkses::PERAN_SUPER }} selalu boleh semua. Halaman Panduan terbuka untuk semua pengguna.</p>
                     <div class="mt-4 overflow-x-auto">
                         <table class="ds-table ds-table-entri">
                             <thead><tr><th>Hak</th><th>Peran yang memiliki</th></tr></thead>
                             <tbody>
-                                @foreach ($this->hakAkses() as $izin => $hak)
-                                    <tr wire:key="hak-{{ $izin }}">
-                                        <td class="text-sm"><span class="block text-ink dark:text-gray-100">{{ $hak['label'] }}</span><span class="font-mono text-xs text-muted">{{ $izin }}</span></td>
-                                        <td><div class="flex flex-wrap gap-1">@foreach ($hak['peran'] as $namaPeran)<x-badge variant="alternative">{{ $namaPeran }}</x-badge>@endforeach</div></td>
+                                @foreach ($this->hakAkses() as $judulProgram => $daftarHak)
+                                    <tr wire:key="hak-program-{{ \Illuminate\Support\Str::slug($judulProgram) }}">
+                                        <td colspan="2" class="text-xs font-semibold tracking-wide uppercase bg-surface-soft text-muted dark:bg-gray-800 dark:text-gray-400">{{ $judulProgram }}</td>
                                     </tr>
+                                    @foreach ($daftarHak as $izin => $hak)
+                                        <tr wire:key="hak-{{ $izin }}">
+                                            <td class="text-sm"><span class="block text-ink dark:text-gray-100">{{ $hak['label'] }}</span><span class="font-mono text-xs text-muted">{{ $izin }}</span></td>
+                                            <td><div class="flex flex-wrap gap-1">@foreach ($hak['peran'] as $namaPeran)<x-badge variant="alternative">{{ $namaPeran }}</x-badge>@endforeach</div></td>
+                                        </tr>
+                                    @endforeach
                                 @endforeach
                             </tbody>
                         </table>

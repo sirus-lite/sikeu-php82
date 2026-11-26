@@ -151,7 +151,7 @@ new class extends Component {
                 @if ($this->periodeBelumPosting !== [])
                     <div role="status" class="px-4 py-2 text-sm rounded-lg bg-warning-soft text-fg-warning">
                         Belum diposting: {{ implode(', ', $this->periodeBelumPosting) }} — kolom Januari s/d {{ SnapshotJurnal::labelPeriode($periode) }} belum lengkap.
-                        <a href="{{ route('buku-besar.periode', ['tahun' => substr($periode, 0, 4)]) }}" wire:navigate class="font-medium underline">Tarik Data SIRUS</a>
+                        <x-tautan-halaman route="buku-besar.periode" :params="['tahun' => substr($periode, 0, 4)]" class="font-medium underline">Tarik Data SIRUS</x-tautan-halaman>
                     </div>
                 @endif
                 @if (($pemeriksaan['yatim'] ?? []) !== [])
@@ -173,7 +173,7 @@ new class extends Component {
                             <p>{{ $kolom['judul'] }}: laba bersih laporan {{ $this->teksNilai($pemeriksaan['laba_bersih_laporan'][$kunciKolom]) }}
                                 ≠ jumlah semua akun Laba Rugi {{ $this->teksNilai($pemeriksaan['laba_bersih_akun'][$kunciKolom]) }} (selisih {{ $this->teksNilai($this->labaTidakCocok[$kunciKolom] ?? 0) }}).
                                 <b>Penyebab: susunan template</b> — akun yatim / dobel atau rumus laba keliru. Betulkan di
-                                <a href="{{ route('master.susunan-laporan', ['template' => $this->laporan['template']->lap_id ?? '']) }}" wire:navigate class="font-semibold underline">Susunan Laporan</a>.</p>
+                                <x-tautan-halaman route="master.susunan-laporan" :params="['template' => $this->laporan['template']->lap_id ?? '']" class="font-semibold underline">Susunan Laporan</x-tautan-halaman>.</p>
                         </div>
                     @endif
                 @endforeach

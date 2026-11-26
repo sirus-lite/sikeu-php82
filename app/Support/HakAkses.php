@@ -3,34 +3,42 @@
 namespace App\Support;
 
 /**
- * KATALOG HAK AKSES (permission Spatie) — siapa boleh apa diatur di Sistem › Peran & Hak Akses dengan mencentang
- * permission per role, BUKAN dengan daftar nama role di kode. Dengan begitu instansi lain bebas memakai nama
- * jabatannya sendiri.
+ * Konstanta hak akses: peran super + CENTANG AWAL yang dipakai berkas program (app/Akses/Program/<Kelompok>/*.php).
  *
- * Pemakaian: menu (AppMenu 'izin'), blade @can('akun.kelola'), server auth()->user()->can('akun.kelola').
- * Spatie mendaftarkan setiap permission ke Gate secara otomatis (config permission.register_permission_check_method).
+ * Siapa boleh apa diatur di Sistem › Peran & Hak Akses dengan mencentang permission per role. Nama role di sini
+ * HANYA centang awal — dipakai sekali saat permission dibuat oleh `php artisan akses:sinkron` (otomatis sesudah
+ * deploy). Sesudahnya yang berlaku centang Role Control, jadi instansi lain bebas memakai nama jabatannya sendiri.
  *
- * MENAMBAH HAK AKSES BARU: tambah di DAFTAR (label tampil di Role Control), buat migrasi yang membuat permission-nya
- * (lihat 2026_11_19_130000_hak_akses_awal_sikeu.php), lalu pakai lewat can()/@can + guard server di method-nya.
+ * Definisi hak (halaman + aksi khusus) ada di berkas program — lihat App\Support\ProgramAkses. Keputusan
+ * boleh/tidak: App\Support\AksesHalaman. Pemakaian aksi: blade @can('akun.kelola'), server Gate::authorize().
  */
 class HakAkses
 {
     /** Role ini selalu boleh semua (Gate::before) — pengaman supaya tidak ada yang mengunci semua admin keluar. */
     public const PERAN_SUPER = 'Admin';
 
-    public const DAFTAR = [
-        'laporan.lihat' => 'Lihat laporan keuangan, bagan akun, peta akun & banding versi',
-        'snapshot.ambil' => 'Ambil snapshot jurnal dari SIRUS (cutoff versi baru)',
-        'jurnal.entri' => 'Buat / ubah jurnal umum selama periode belum dikunci',
-        'jurnal.posting' => 'Sahkan versi snapshot SIRUS & posting ke buku besar',
-        'periode.kunci' => 'Buka tahun buku, kunci / buka kunci periode bulanan (pengesahan)',
-        'tutupBuku.jalankan' => 'Jalankan tutup buku tahunan (pengesahan)',
-        'akun.kelola' => 'Ubah kelompok, bagan akun, peta akun SIRUS & format kode akun',
-        'sistem.kelola' => 'Kelola identitas instansi, user, role & sambungan SIRUS',
-    ];
+    /** Penanda 'roles' menu yang terbuka untuk SEMUA user login (Panduan) — tak dibuat permission-nya. */
+    public const SEMUA_ROLE = '*';
 
+    /** Centang awal (nama role huruf kecil, dicocokkan tanpa beda besar-kecil). */
+    public const AWAL_PEMBUKUAN = ['admin', 'manager keuangan', 'staf akuntansi'];
+    public const AWAL_LAPORAN = ['admin', 'manager keuangan', 'staf akuntansi', 'direksi'];
+    public const AWAL_PENGESAH = ['admin', 'manager keuangan'];
+    public const AWAL_SISTEM = ['admin'];
+
+    /** Label hak untuk tampilan (Role Control, Cara Pakai): lihat halaman atau aksi khusus. */
     public static function label(string $permission): string
     {
-        return self::DAFTAR[$permission] ?? '';
+        $aksi = ProgramAkses::aksiKhusus()[$permission]['label'] ?? null;
+        if ($aksi !== null) {
+            return $aksi;
+        }
+        foreach (ProgramAkses::menu() as $menu) {
+            if (AksesHalaman::namaPermission($menu['route'], 'lihat') === $permission) {
+                return 'Lihat halaman ' . $menu['title'];
+            }
+        }
+
+        return '';
     }
 }

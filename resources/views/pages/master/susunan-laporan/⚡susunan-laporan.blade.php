@@ -11,7 +11,7 @@ use App\Support\SusunanLaporan;
  * SUSUNAN LAPORAN — kelola template Laba Rugi & Neraca tanpa SQL (App\Support\SusunanLaporan).
  * Banyak template per jenis (mis. Umum SAK EP untuk pihak luar, Internal per instalasi); satu bawaan per jenis.
  * Atas: daftar template + pemeriksaan (akun yatim / dobel / galat rumus). Bawah: susunan baris template terpilih —
- * naik/turun, ubah, sisip di bawah, hapus. Lihat = laporan.lihat (menu); ubah = akun.kelola.
+ * naik/turun, ubah, sisip di bawah, hapus. Lihat = master.susunan-laporan.lihat (menu); ubah = akun.kelola.
  */
 new class extends Component {
     #[Url(as: 'template', except: '')]

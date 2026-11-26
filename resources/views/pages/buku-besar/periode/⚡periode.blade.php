@@ -15,7 +15,7 @@ use App\Support\SnapshotJurnal;
  * Tahun diketik bebas (mis. 2025) supaya tahun lama bisa diproses mundur. "Tarik & Sahkan Setahun" = antrean: tiap bulan yang
  * belum diposting (sampai bulan berjalan) diambil snapshotnya dari SIRUS lalu disahkan & diposting otomatis; digerakkan
  * wire:poll (pola Snapshot Jurnal) supaya tidak ada request panjang. Logika di App\Support\BukuBesar & SnapshotJurnal.
- * Hak: lihat = laporan.lihat (menu), ambil = snapshot.ambil, posting = jurnal.posting, buka tahun & kunci = periode.kunci.
+ * Hak: lihat = buku-besar.periode.lihat (menu), ambil = snapshot.ambil, posting = jurnal.posting, buka tahun & kunci = periode.kunci.
  */
 new class extends Component {
     #[Url(as: 'tahun', except: '')]

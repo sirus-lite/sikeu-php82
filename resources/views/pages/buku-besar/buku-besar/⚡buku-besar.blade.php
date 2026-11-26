@@ -251,7 +251,7 @@ new class extends Component {
                                         <td colspan="8" class="px-6 py-8 text-center text-muted dark:text-gray-400">
                                             @if (!$this->adaPosting)
                                                 Belum ada periode yang diposting di rentang ini — buku besar hanya membaca jurnal yang sudah disahkan.
-                                                <a href="{{ route('buku-besar.periode', ['tahun' => substr($periodeDari, 0, 4)]) }}" wire:navigate class="font-medium underline">Sahkan & posting di Tarik Data SIRUS</a>.
+                                                <x-tautan-halaman route="buku-besar.periode" :params="['tahun' => substr($periodeDari, 0, 4)]" class="font-medium underline">Sahkan & posting di Tarik Data SIRUS</x-tautan-halaman>.
                                             @else
                                                 Tidak ada mutasi akun ini di rentang yang sudah diposting.
                                             @endif

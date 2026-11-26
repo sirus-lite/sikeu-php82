@@ -4,7 +4,9 @@ namespace App\Providers;
 
 use App\Http\Middleware\CekAksesMenu;
 use App\Services\AppMenu;
+use App\Support\AksesHalaman;
 use App\Support\HakAkses;
+use App\Support\ProgramAkses;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
@@ -33,10 +35,16 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
-        // Hak akses = permission Spatie yang dicentang per role di Role Control (katalog: App\Support\HakAkses).
-        // Spatie mendaftarkan tiap permission ke Gate, jadi @can('akun.kelola') / ->can() langsung jalan.
+        // Hak akses = permission Spatie yang dicentang per role di Role Control; definisinya di berkas program
+        // app/Akses/Program/<Kelompok>/*.php (App\Support\ProgramAkses). Spatie mendaftarkan tiap permission ke Gate.
         // Role super (Admin) selalu lolos supaya tidak ada yang bisa mengunci semua admin keluar.
         Gate::before(fn ($user) => $user->hasRole(HakAkses::PERAN_SUPER) ? true : null);
+
+        // Aksi khusus berkas program: Gate cadangan bila permission-nya belum dibuat (sebelum akses:sinkron pertama)
+        // → centang awal definisi. Sesudah dibuat, centang Role Control yang berlaku (AksesHalaman::bolehAksi).
+        foreach (array_keys(ProgramAkses::aksiKhusus()) as $namaAksi) {
+            Gate::define($namaAksi, fn ($user) => AksesHalaman::bolehAksi($user, $namaAksi));
+        }
 
         // Middleware izin menu juga dijalankan ulang di setiap aksi Livewire (/livewire/update), tidak hanya saat
         // halaman dibuka — hak akses yang dicabut di Role Control langsung berlaku untuk tab yang masih terbuka.
